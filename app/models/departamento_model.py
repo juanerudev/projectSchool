@@ -1,5 +1,8 @@
-from sqlmodel import SQLModel, Field
-from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .profesor_model import Profesor
 
 class DepartamentoBase(SQLModel):
     nombre: str = Field(..., max_length=30, description="Nombre del departamento")
@@ -15,3 +18,4 @@ class ActualizarDepartamento(SQLModel):
 class Departamento(DepartamentoBase, table=True):
     __tablename__ = "departamentos"
     departamento_id: Optional[int] = Field(default=None, primary_key=True)
+    profesores: list["Profesor"] = Relationship(back_populates="departamento", cascade_delete=False)
