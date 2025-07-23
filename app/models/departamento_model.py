@@ -12,5 +12,6 @@ class ActualizarDepartamento(SQLModel):
     nombre: Optional[str] = Field(default=None, max_length=30, description="Nombre del departamento")
     descripcion: Optional[str] = Field(default=None, max_length=150, description="Descripción del departamento")
 
-class Departamento(DepartamentoBase):
-    departamento_id: Optional[int] = Field(default=None)
+class Departamento(DepartamentoBase, table=True):
+    __tablename__ = "departamentos"
+    departamento_id: Optional[int] = Field(default=None, primary_key=True)
