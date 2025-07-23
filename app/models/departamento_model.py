@@ -18,4 +18,4 @@ class ActualizarDepartamento(SQLModel):
 class Departamento(DepartamentoBase, table=True):
     __tablename__ = "departamentos"
     departamento_id: Optional[int] = Field(default=None, primary_key=True)
-    profesores: list["Profesor"] = Relationship(back_populates="departamento", cascade_delete=False)
+    profesores: list["Profesor"] = Relationship(back_populates="departamento", cascade_delete=True)
