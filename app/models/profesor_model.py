@@ -16,7 +16,7 @@ class CrearProfesor(ProfesorBase):
 
 class ActualizarProfesor(SQLModel):
     nombre: Optional[str] = Field(default=None, max_length=30, description="Nombre del profesor")
-    descripcion: Optional[str] = Field(default=None, max_length=30, description="Apellido del profesor")
+    apellido: Optional[str] = Field(default=None, max_length=30, description="Apellido del profesor")
     email: Optional[EmailStr] = Field(default=None, description="Email del profesor")
     departamento_id: Optional[int] = Field(default=None, foreign_key="departamentos.departamento_id", description="ID del departamento")
 
