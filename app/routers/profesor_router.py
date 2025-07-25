@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Query
-from models import Profesor, CrearProfesor, ActualizarProfesor, Departamento
+from models import Profesor, CrearProfesor, ActualizarProfesor, Departamento, Asignatura
 from db import SessionDep
 from sqlmodel import select
 from typing import Optional
@@ -89,6 +89,12 @@ async def delete_profesor(session: SessionDep, profesor_id: int):
     if not profesor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profesor no encontrado")
     
+    asignaturas = session.exec(select(Asignatura).where(Asignatura.profesor_id == profesor_id)).all()
+    for asignatura in asignaturas:
+        asignatura.profesor_id = None
+        session.add(asignatura)
+    session.commit()
+
     session.delete(profesor)
     session.commit()
     return {"detail":"Profesor eliminado correctamente"}

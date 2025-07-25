@@ -4,6 +4,7 @@ from pydantic import EmailStr
 
 if TYPE_CHECKING:
     from .departamento_model import Departamento
+    from .asignatura_model import Asignatura
 
 class ProfesorBase(SQLModel):
     nombre: str = Field(..., max_length=30, description="Nombre del profesor")
@@ -24,3 +25,5 @@ class Profesor(ProfesorBase, table=True):
     __tablename__ = "profesores"
     profesor_id: Optional[int] = Field(default=None, primary_key=True)
     departamento: Optional["Departamento"] = Relationship(back_populates="profesores")
+
+    asignaturas: list["Asignatura"] = Relationship(back_populates="profesor", cascade_delete=False)
