@@ -1,8 +1,10 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING
+from .estudiante_asignatura_link import EstudianteAsignaturaLink
 
 if TYPE_CHECKING:
     from .profesor_model import Profesor
+    from .estudiante_model import Estudiante
 
 class AsignaturaBase(SQLModel):
     nombre: str = Field(..., max_length=50, description="Nombre de la asignatura")
@@ -22,3 +24,7 @@ class Asignatura(AsignaturaBase, table=True):
     asignatura_id: Optional[int] = Field(default=None, primary_key=True)
 
     profesor: Optional["Profesor"] = Relationship(back_populates="asignaturas")
+    estudiantes: list["Estudiante"] = Relationship(
+        back_populates="asignaturas", 
+        link_model=EstudianteAsignaturaLink
+    )
