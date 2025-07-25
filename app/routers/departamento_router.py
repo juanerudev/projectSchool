@@ -7,14 +7,22 @@ router = APIRouter()
 
 @router.post("/", response_model=Departamento, status_code=status.HTTP_201_CREATED)
 async def create_departamento(session: SessionDep, departamento_data: CrearDepartamento):
-    query_existe_departamento = select(Departamento).where(Departamento.nombre == departamento_data.nombre.strip())
+    # Verificar si ya existe un departamento con ese nombre
+    query_existe_departamento = select(Departamento).where(
+        Departamento.nombre == departamento_data.nombre.strip()
+    )
     existe_departamento = session.exec(query_existe_departamento).first()
 
     if existe_departamento:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ya existe un departamento con ese nombre")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail="Ya existe un departamento con ese nombre"
+        )
     
+    # Crear el nuevo departamento
     departamento_dict = departamento_data.model_dump()
     departamento_dict['nombre'] = departamento_dict['nombre'].strip()
+    departamento_dict['descripcion'] = departamento_dict['descripcion'].strip()
     departamento = Departamento.model_validate(departamento_dict)
     
     session.add(departamento)
@@ -35,8 +43,12 @@ async def get_departamentos(
 @router.get("/{departamento_id}", response_model=Departamento)
 async def get_departamento(session: SessionDep, departamento_id: int):
     departamento = session.get(Departamento, departamento_id)
+    
     if not departamento:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Departamento no encontrado")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Departamento no encontrado"
+        )
     
     return departamento
 
@@ -45,18 +57,31 @@ async def update_departamento(session: SessionDep, departamento_id: int, departa
     departamento = session.get(Departamento, departamento_id)
 
     if not departamento:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Departamento no encontrado")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Departamento no encontrado"
+        )
     
+    # Verificar nombre único si se está actualizando
     if departamento_data.nombre:
         nombre_nuevo = departamento_data.nombre.strip()
 
         if nombre_nuevo != departamento.nombre:
-            existe_departamento = session.exec(select(Departamento).where(Departamento.nombre == nombre_nuevo)).first()
+            existe_departamento = session.exec(
+                select(Departamento).where(Departamento.nombre == nombre_nuevo)
+            ).first()
 
             if existe_departamento:
-                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ya existe un departamento con ese nombre")
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT, 
+                    detail="Ya existe un departamento con ese nombre"
+                )
             
             departamento_data.nombre = nombre_nuevo
+    
+    # Limpiar descripción si se proporciona
+    if departamento_data.descripcion:
+        departamento_data.descripcion = departamento_data.descripcion.strip()
     
     departamento_data_dict = departamento_data.model_dump(exclude_unset=True)
     departamento.sqlmodel_update(departamento_data_dict)
@@ -69,8 +94,19 @@ async def update_departamento(session: SessionDep, departamento_id: int, departa
 @router.delete("/{departamento_id}")
 async def delete_departamento(session: SessionDep, departamento_id: int):
     departamento = session.get(Departamento, departamento_id)
+    
     if not departamento:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Departamento no encontrano")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Departamento no encontrado"
+        )
+    
+    # Verificar si tiene profesores asociados
+    if departamento.profesores:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se puede eliminar el departamento porque tiene profesores asociados"
+        )
     
     session.delete(departamento)
     session.commit()
